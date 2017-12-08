@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source: {repository: golang}
 inputs:
-  - name: super-app
+  - name: pull-request
 outputs:
   - name: artifact
 run:
@@ -15,4 +15,4 @@ run:
       ./scripts/go_deps.sh
       ./scripts/go_build.sh linux 0.0.1
       mv super_*_linux_amd64 ../artifact
-  dir: super-app
+  dir: pull-request

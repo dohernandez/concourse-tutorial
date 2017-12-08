@@ -6,8 +6,13 @@ resource_types:
       repository: jtarchie/pr
 
 resources:
-  - name: super-app
+  - name: pull-request
     type: pull-request
+    source:
+      repo: dohernandez/concourse-tutorial
+      access_token: {{github_token}}
+  - name: release-rc
+    type: github-release
     source:
       repo: dohernandez/concourse-tutorial
       access_token: {{github_token}}
@@ -16,67 +21,67 @@ jobs:
   - name: testing
     plan:
 
-    - get: super-app
+    - get: pull-request
       trigger: true
 
     # Make a context "unit tests" status pending in Github Pull request
-    - put: super-app
-      params: {path: super-app, context: Unit tests, status: pending}
+    - put: pull-request
+      params: {path: pull-request, context: testing, status: pending}
 
     - aggregate: # parallelisms running
       - task: run lint
-        file: super-app/tutorial/scenario.1/1-list/tasks/lint.yml
+        file: pull-request/tutorial/scenario.1/1-list/tasks/lint.yml
         on_success:
-          put: super-app
-          params: {path: super-app, context: lint, status: success}
+          put: pull-request
+          params: {path: pull-request, context: lint, status: success}
         on_failure:
-          put: super-app
-          params: {path: super-app, context: lint, status: failure}
+          put: pull-request
+          params: {path: pull-request, context: lint, status: failure}
 
       - task: run unit
-        file: super-app/tutorial/scenario.1/1-list/tasks/unit.yml
+        file: pull-request/tutorial/scenario.1/1-list/tasks/unit.yml
         on_success:
-          put: super-app
-          params: {path: super-app, context: unit, status: success}
+          put: pull-request
+          params: {path: pull-request, context: unit, status: success}
         on_failure:
-          put: super-app
-          params: {path: super-app, context: unit, status: failure}
+          put: pull-request
+          params: {path: pull-request, context: unit, status: failure}
 
     on_success:
-      put: super-app
-      params: {path: super-app, context: testing, status: success}
+      put: pull-request
+      params: {path: pull-request, context: testing, status: success}
     on_failure:
-      put: super-app
-      params: {path: super-app, context: testing, status: failure}
+      put: pull-request
+      params: {path: pull-request, context: testing, status: failure}
 
   - name: building & integration test
     plan:
 
-    - get: super-app
+    - get: pull-request
       passed: ["testing"] # List of dependencies job. The jobs have to pass before to execute this job
       trigger: true
 
     - task: run build
-      file: super-app/tutorial/scenario.1/1-list/tasks/build.yml
+      file: pull-request/tutorial/scenario.1/1-list/tasks/build.yml
       on_success:
-        put: super-app
-        params: {path: super-app, context: build, status: success}
+        put: pull-request
+        params: {path: pull-request, context: build, status: success}
       on_failure:
-        put: super-app
-        params: {path: super-app, context: build, status: failure}
+        put: pull-request
+        params: {path: pull-request, context: build, status: failure}
 
     - task: run integration test
-      file: super-app/tutorial/scenario.1/1-list/tasks/integration_test.yml
+      file: pull-request/tutorial/scenario.1/1-list/tasks/integration_test.yml
       on_success:
-        put: super-app
-        params: {path: super-app, context: integration test, status: success}
+        put: pull-request
+        params: {path: pull-request, context: integration test, status: success}
       on_failure:
-        put: super-app
-        params: {path: super-app, context: integration test, status: failure}
+        put: pull-request
+        params: {path: pull-request, context: integration test, status: failure}
 
     on_success:
-      put: super-app
-      params: {path: super-app, context: building & integration test, status: success}
+      put: pull-request
+      params: {path: pull-request, context: building & integration test, status: success}
     on_failure:
-      put: super-app
-      params: {path: super-app, context: building & integration test, status: failure}
+      put: pull-request
+      params: {path: pull-request, context: building & integration test, status: failure}
