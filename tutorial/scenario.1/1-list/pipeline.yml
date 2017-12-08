@@ -26,9 +26,28 @@ jobs:
     - aggregate: # parallelisms running
       - task: run lint
         file: super-app/tutorial/scenario.1/1-list/tasks/lint.yml
+        on_success:
+          put: super-app
+          params: {path: super-app, context: lint, status: success}
+        on_failure:
+          put: super-app
+          params: {path: super-app, context: lint, status: failure}
 
       - task: run unit
         file: super-app/tutorial/scenario.1/1-list/tasks/unit.yml
+        on_success:
+          put: super-app
+          params: {path: super-app, context: unit, status: success}
+        on_failure:
+          put: super-app
+          params: {path: super-app, context: unit, status: failure}
+
+    on_success:
+      put: super-app
+      params: {path: super-app, context: testing, status: success}
+    on_failure:
+      put: super-app
+      params: {path: super-app, context: testing, status: failure}
 
   - name: building & integration test
     plan:
@@ -39,6 +58,25 @@ jobs:
 
     - task: run build
       file: super-app/tutorial/scenario.1/1-list/tasks/build.yml
+      on_success:
+        put: super-app
+        params: {path: super-app, context: build, status: success}
+      on_failure:
+        put: super-app
+        params: {path: super-app, context: build, status: failure}
 
     - task: run integration test
       file: super-app/tutorial/scenario.1/1-list/tasks/integration_test.yml
+      on_success:
+        put: super-app
+        params: {path: super-app, context: integration test, status: success}
+      on_failure:
+        put: super-app
+        params: {path: super-app, context: integration test, status: failure}
+
+    on_success:
+      put: super-app
+      params: {path: super-app, context: building & integration test, status: success}
+    on_failure:
+      put: super-app
+      params: {path: super-app, context: building & integration test, status: failure}
