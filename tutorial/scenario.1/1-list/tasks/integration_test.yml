@@ -1,16 +1,16 @@
 ---
 platform: linux
-  image_resource:
-    type: docker-image
-    source: {repository: golang}
-  inputs:
-    - name: super-app
-    - name: artifact
-  run:
-    path: sh
-    args:
-      - -exc
-      - |
-        ./artifact/super_*_linux_amd64&
-        ./super-app/scripts/test_integration.sh http://127.0.0.1:8080
-        kill -9 `pgrep super_`
+image_resource:
+  type: docker-image
+  source: {repository: golang}
+inputs:
+  - name: super-app
+  - name: artifact
+run:
+  path: sh
+  args:
+    - -exc
+    - |
+      ./artifact/super_*_linux_amd64&
+      ./super-app/scripts/test_integration.sh http://127.0.0.1:8080
+      kill -9 `pgrep super_`
