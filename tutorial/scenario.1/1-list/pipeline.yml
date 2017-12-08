@@ -1,25 +1,44 @@
 ---
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: jtarchie/pr
+
 resources:
   - name: super-app
-    type: git
-    branch: ci
+    type: pull-request
     source:
-      uri: https://github.com/hellofresh/concourse-tutorial.git
+      repo: dohernandez/concourse-tutorial
+      access_token: {{github_token}}
 
 jobs:
-  - name: Test
+  - name: testing
     plan:
+
     - get: super-app
       trigger: true
-    - task: Testing
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source: {repository: ubuntu}
-        run:
-          path: ls
-          args: ["-l"]
 
-        inputs:
-          - name: super-app
+    # Make a context "unit tests" status pending in Github Pull request
+    - put: super-app
+      params: {path: super-app, context: Unit tests, status: pending}
+
+    - aggregate: # parallelisms running
+      - task: lint
+        file: super-app/tutorial/scenario.1/1-list/tasks/lint.yml
+
+      - task: run unit
+        file: super-app/tutorial/scenario.1/1-list/tasks/unit.yml
+
+  - name: building & integration test
+    plan:
+
+    - get: super-app
+      passed: ["testing"] # List of dependencies job. The jobs have to pass before to execute this job
+      trigger: true
+
+    - task: build
+      file: super-app/tutorial/scenario.1/1-list/tasks/build.yml
+
+    - task: integration test
+      file: super-app/tutorial/scenario.1/1-list/tasks/integration_test.yml
