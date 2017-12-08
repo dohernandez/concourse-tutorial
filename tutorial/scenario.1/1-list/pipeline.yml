@@ -24,7 +24,7 @@ jobs:
       params: {path: super-app, context: Unit tests, status: pending}
 
     - aggregate: # parallelisms running
-      - task: lint
+      - task: run lint
         file: super-app/tutorial/scenario.1/1-list/tasks/lint.yml
 
       - task: run unit
@@ -37,8 +37,8 @@ jobs:
       passed: ["testing"] # List of dependencies job. The jobs have to pass before to execute this job
       trigger: true
 
-    - task: build
+    - task: run build
       file: super-app/tutorial/scenario.1/1-list/tasks/build.yml
 
-    - task: integration test
+    - task: run integration test
       file: super-app/tutorial/scenario.1/1-list/tasks/integration_test.yml
